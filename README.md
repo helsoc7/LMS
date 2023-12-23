@@ -19,4 +19,6 @@ Je nachdem, ob man sich als admin oder student registriert bzw. anmeldet erhält
 
 
 ## TODO
-- Logout-Funktion auf den Startseiten der Rollen
+- [x] Logout-Funktion auf den Startseiten der Rollen
+- [ ] AssignCourse Funktion bugfixen
+- [x] EC2 Deployment --> Statische Website http://lms-231223.s3-website.eu-north-1.amazonaws.com
