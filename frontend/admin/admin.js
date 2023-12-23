@@ -1,6 +1,6 @@
 console.log("Skript für Admin-Startseite läuft");
 
-const apiUrl = "http://localhost:3000/";
+const apiUrl = "http://13.49.57.99:3000/";
 
 "use strict";
 
@@ -29,7 +29,7 @@ function logout() {
 
 async function getStudents() {
     try {
-        const response = await fetch('http://localhost:3000/getStudents');
+        const response = await fetch(apiUrl + 'getStudents');
         const students = await response.json();
         console.log(students);
         let studentHTML = '';
@@ -70,7 +70,7 @@ async function getStudents() {
 
 async function populateCourses(studentId) {
     try {
-        const response = await fetch('http://localhost:3000/getCourses');
+        const response = await fetch(apiUrl + 'getCourses');
         const courses = await response.json();
 
         let courseHTML = '';
@@ -94,7 +94,7 @@ async function populateCourses(studentId) {
 
 async function displayCourses() {
     try {
-        const response = await fetch('http://localhost:3000/getCourses');
+        const response = await fetch(apiUrl + 'getCourses');
         const courses = await response.json();
         let displayCoursesHTML = '';
         courses.forEach((course) => {
@@ -121,7 +121,7 @@ async function displayCourses() {
 
 async function addCourse(studentId, courseId) {
     try {
-        const response = await fetch('http://localhost:3000/assignCourse', {
+        const response = await fetch(apiUrl + 'assignCourse', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ studentId, courseId })
@@ -153,7 +153,7 @@ document.getElementById("btnCourse").addEventListener("click", async (event) => 
         document.forms.course.classList.add("was-validated");
     } else {
         try {
-            const response = await fetch('http://localhost:3000/addCourse', {
+            const response = await fetch(apiUrl + 'addCourse', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ courseName, courseType, courseDescription, courseImage })

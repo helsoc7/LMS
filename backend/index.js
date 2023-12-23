@@ -117,7 +117,7 @@ app.post('/assignCourse', (req, res) => {
     const { studentId, courseId } = req.body;
 
     // Finde den entsprechenden Studenten und Kurs
-    const student = users.find(user => user.id === studentId && user.type === 'student');
+    const student = users.find(user => user.id === studentId && user.type === '1');
     const course = courses.find(course => course.id === courseId);
 
     if (!student || !course) {

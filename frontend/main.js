@@ -1,6 +1,6 @@
 console.log("Skript läuft");
 
-const apiUrl = "http://localhost:3000/";
+const apiUrl = "http://13.49.57.99:3000/";
 
 document.getElementById('btnRegister').addEventListener('click', async (event) => {
     event.preventDefault();
@@ -16,7 +16,7 @@ document.getElementById('btnRegister').addEventListener('click', async (event) =
     }
     else {
         try {
-            const response = await fetch('http://localhost:3000/register', {
+            const response = await fetch(apiUrl + 'register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userName, password, type})
@@ -45,7 +45,7 @@ document.getElementById('btnLogin').addEventListener('click', async (e) => {
         document.forms.login.classList.add('was-validated');
     } else {
         try {
-            const response = await fetch('http://localhost:3000/login', {
+            const response = await fetch(apiUrl + 'login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userName, password, type })

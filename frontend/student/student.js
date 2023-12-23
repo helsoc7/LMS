@@ -1,5 +1,5 @@
 "use strict";
-const apiUrl = "http://localhost:3000/";
+const apiUrl = "http://13.49.57.99:3000/";
 const student = 1;
 let loginUser = JSON.parse(sessionStorage.getItem("loginUser"));
 
