@@ -94,9 +94,9 @@ function showAlert(alertId) {
 
 function redirectUserBasedOnType(type) {
     console.log("Weiterleitender Benutzertyp:", type);
-    if (type === '0') {
+    if (type === 0) {
         window.location.href = 'admin/admin.html';
-    } else if (type === '1') {
+    } else if (type === 1) {
         window.location.href = 'student/student.html';
     }
 }

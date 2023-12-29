@@ -35,14 +35,14 @@ async function getStudents() {
         let studentHTML = '';
         students.forEach((student) => {
             studentHTML += `
-                <div id="accordion${student.id}">
+                <div id="accordion${student.user_id}">
                     <div class="card">
-                        <div class="card-header text-start" data-bs-toggle="collapse" href="#collapse${student.id}">
-                            ${student.userName}
+                        <div class="card-header text-start" data-bs-toggle="collapse" href="#collapse${student.user_id}">
+                            ${student.username}
                         </div>
-                        <div id="collapse${student.id}" class="collapse" data-bs-parent="#accordion${student.id}">
+                        <div id="collapse${student.user_id}" class="collapse" data-bs-parent="#accordion${student.user_id}">
                             <div class="card-body">
-                                <table class="table table-bordered w-50" id="table-${student.id}">
+                                <table class="table table-bordered w-50" id="table-${student.user_id}">
                                     <thead>
                                         <tr>
                                             <th>Course Name</th>
@@ -61,7 +61,7 @@ async function getStudents() {
 
         document.getElementById("students").innerHTML = studentHTML;
         students.forEach((student) => {
-            populateCourses(student.id);
+            populateCourses(student.user_id);
         });
     } catch (error) {
         console.error('Fehler beim Abrufen der Studenten:', error);
@@ -77,7 +77,7 @@ async function populateCourses(studentId) {
         courses.forEach((course) => {
             courseHTML += `
                 <tr>
-                    <td class="w-80">${course.courseName}</td>
+                    <td class="w-80">${course.course_name}</td>
                     <td>
                         <button type="button" onclick="addCourse('${studentId}', '${course.id}');" class="btn btn-primary btn-sm btn-block">Add</button>
                         <button type="button" onclick="removeCourse('${studentId}', '${course.id}');" class="btn btn-danger btn-sm btn-block">Remove</button>
@@ -101,12 +101,12 @@ async function displayCourses() {
             displayCoursesHTML += `
                 <div class="col-4">
                     <div class="card">
-                        <img src="${course.courseImage}" class="card-img-top" alt="image" />
+                        <img src="${course.course_image}" class="card-img-top" alt="image" />
                         <hr>
                         <div class="card-body">
-                            <h5 class="card-title">${course.courseName}</h5>
-                            <span>(${course.courseType})</span>
-                            <p class="card-text">${course.courseDescription}</p>
+                            <h5 class="card-title">${course.course_name}</h5>
+                            <span>(${course.course_type})</span>
+                            <p class="card-text">${course.course_description}</p>
                         </div>
                     </div>
                 </div>
@@ -142,10 +142,10 @@ async function removeCourse(studentId, courseId) {
 }
 
 document.getElementById("btnCourse").addEventListener("click", async (event) => {
-    let courseName = document.forms.course.courseName.value;
-    let courseType = document.forms.course.courseType.value;
-    let courseDescription = document.forms.course.courseDescription.value;
-    let courseImage = document.forms.course.courseImage.value;
+    let course_name = document.forms.course.course_name.value;
+    let course_type = document.forms.course.course_type.value;
+    let course_description = document.forms.course.course_description.value;
+    let course_image = document.forms.course.course_image.value;
 
     if (!document.forms.course.checkValidity()) {
         event.preventDefault();
@@ -156,7 +156,7 @@ document.getElementById("btnCourse").addEventListener("click", async (event) => 
             const response = await fetch('http://localhost:3000/addCourse', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ courseName, courseType, courseDescription, courseImage })
+                body: JSON.stringify({ course_name, course_type, course_description, course_image })
             });
 
             if (response.ok) {
