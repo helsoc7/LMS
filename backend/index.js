@@ -125,35 +125,35 @@ app.post('/login', async (req, res) => {
 });
 
 app.post('/addCourse', async (req, res) => {
-    const { courseName, courseType, courseImage, courseDescription } = req.body;
+    const { course_name, course_type, course_image, course_description } = req.body;
 
     // Grundlegende Validierungen
-    if (!courseName || typeof courseName !== 'string' || courseName.trim() === '') {
+    if (!course_name || typeof course_name !== 'string' || course_name.trim() === '') {
         return res.status(400).send({ message: 'Ungültiger Kursname' });
     }
 
-    if (!courseType || typeof courseType !== 'string' || courseType.trim() === '') {
+    if (!course_type || typeof course_type !== 'string' || course_type.trim() === '') {
         return res.status(400).send({ message: 'Ungültiger Kurstyp' });
     }
 
-    if (!courseImage || typeof courseImage !== 'string' || courseImage.trim() === '') {
+    if (!course_image || typeof course_image !== 'string' || course_image.trim() === '') {
         return res.status(400).send({ message: 'Ungültiges Kursbild' });
     }
 
-    if (!courseDescription || typeof courseDescription !== 'string' || courseDescription.trim() === '') {
+    if (!course_description || typeof course_description !== 'string' || course_description.trim() === '') {
         return res.status(400).send({ message: 'Ungültige Kursbeschreibung' });
     }
 
     try {
         const cnx = await getConnection();
-        const [existing] = await cnx.query('SELECT * FROM course WHERE course_name = ?', [courseName]);
+        const [existing] = await cnx.query('SELECT * FROM course WHERE course_name = ?', [course_name]);
         if (existing.length > 0) {
             return res.status(409).send({ message: 'Kurs existiert bereits' });
         }
 
-        await cnx.execute('INSERT INTO course (course_name, course_type, course_image, course_description) VALUES (?, ?, ?, ?)', [courseName, courseType, courseImage, courseDescription]);
-        console.log('Kurs hinzugefügt:', { courseName, courseType });
-        res.status(200).send({ message: 'Kurs erfolgreich hinzugefügt', course: { courseName, courseType } });
+        await cnx.execute('INSERT INTO course (course_name, course_type, course_image, course_description) VALUES (?, ?, ?, ?)', [course_name, course_type, course_image, course_description]);
+        console.log('Kurs hinzugefügt:', { course_name, course_type });
+        res.status(200).send({ message: 'Kurs erfolgreich hinzugefügt', course: { course_name, course_type } });
 
         await cnx.end();
     } catch (error) {
@@ -164,40 +164,80 @@ app.post('/addCourse', async (req, res) => {
 
 
 // Kurs einem Studenten zuweisen
-app.post('/assignCourse', (req, res) => {
-    const { studentId, courseId } = req.body;
+app.post('/assignCourse', async (req, res) => {
+    const { user_id, course_id } = req.body;
 
-    // Finde den entsprechenden Studenten und Kurs
-    const student = users.find(user => user.id === studentId && user.type === 'student');
-    const course = courses.find(course => course.id === courseId);
+    try {
+        const cnx = await getConnection();
 
-    if (!student || !course) {
-        return res.status(404).send({ message: 'Student oder Kurs nicht gefunden' });
+        // Überprüfen, ob der Student existiert
+        const [studentExists] = await cnx.query('SELECT * FROM users WHERE user_id = ? AND type = 1', [user_id]);
+        if (studentExists.length === 0) {
+            return res.status(404).send({ message: 'Student nicht gefunden' });
+        }
+
+        // Überprüfen, ob der Kurs existiert
+        const [courseExists] = await cnx.query('SELECT * FROM course WHERE course_id = ?', [course_id]);
+        if (courseExists.length === 0) {
+            return res.status(404).send({ message: 'Kurs nicht gefunden' });
+        }
+
+        // Zuweisung speichern
+        await cnx.execute('INSERT INTO assigned_courses (student_id, course_id) VALUES (?, ?)', [user_id, course_id]);
+        console.log(`Kurs ${course_id} wurde Student ${user_id} zugewiesen`);
+        res.status(200).send({ message: 'Kurs erfolgreich zugewiesen' });
+
+        await cnx.end();
+    } catch (error) {
+        console.error("Error assigning course", error);
+        res.status(500).send({ message: "Internal Server Error" });
     }
-
-    // Zuweisung speichern
-    assignedCourses.push({ studentId, courseId });
-    console.log(`Kurs ${courseId} wurde Student ${studentId} zugewiesen`);
-    res.status(200).send({ message: 'Kurs erfolgreich zugewiesen' });
 });
 
 
 // Zugewiesene Kurse für einen bestimmten Studenten abrufen
 app.get('/getAssignedCourses/:studentId', async (req, res) => {
-    const studentId = parseInt(req.params.studentId);
-
     try {
+        const studentId = req.params.studentId;
         const cnx = await getConnection();
         const [assignedCourses] = await cnx.query(`
-            SELECT c.course_id, c.course_name, c.course_type, c.course_image, c.course_description 
-            FROM assigned_courses ac 
-            JOIN course c ON ac.course_id = c.course_id 
-            WHERE ac.student_id = ?`, [studentId]);
+            SELECT course.* FROM assigned_courses 
+            JOIN course ON assigned_courses.course_id = course.course_id 
+            WHERE assigned_courses.student_id = ?`, [studentId]);
 
-        res.status(200).send({ courses: assignedCourses });
+        res.status(200).send(assignedCourses);
         await cnx.end();
     } catch (error) {
-        console.error("Error retrieving assigned courses", error);
+        console.error("Error retrieving assigned courses for student", error);
+        res.status(500).send({ message: "Internal Server Error" });
+    }
+});
+
+
+// Kurse löschen
+app.delete('/deleteCourse/:courseId', async (req, res) => {
+    try {
+        const courseId = req.params.courseId;
+        const cnx = await getConnection();
+        await cnx.execute('DELETE FROM course WHERE course_id = ?', [courseId]);
+        res.status(200).send({ message: 'Kurs erfolgreich gelöscht' });
+        await cnx.end();
+    } catch (error) {
+        console.error("Error deleting course", error);
+        res.status(500).send({ message: "Internal Server Error" });
+    }
+});
+
+// Route zum Entfernen eines zugewiesenen Kurses
+app.delete('/unassignCourse', async (req, res) => {
+    const { studentId, courseId } = req.body;
+    try {
+        const cnx = await getConnection();
+        await cnx.execute('DELETE FROM assigned_courses WHERE student_id = ? AND course_id = ?', [studentId, courseId]);
+        res.status(200).send({ message: 'Kurs erfolgreich entfernt' });
+        await cnx.end();
+    } catch (error) {
+        console.error("Error unassigning course", error);
         res.status(500).send({ message: "Internal Server Error" });
     }
 });

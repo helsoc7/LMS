@@ -35,28 +35,31 @@ async function getStudents() {
         let studentHTML = '';
         students.forEach((student) => {
             studentHTML += `
-                <div id="accordion${student.user_id}">
-                    <div class="card">
-                        <div class="card-header text-start" data-bs-toggle="collapse" href="#collapse${student.user_id}">
-                            ${student.username}
-                        </div>
-                        <div id="collapse${student.user_id}" class="collapse" data-bs-parent="#accordion${student.user_id}">
-                            <div class="card-body">
-                                <table class="table table-bordered w-50" id="table-${student.user_id}">
-                                    <thead>
-                                        <tr>
-                                            <th>Course Name</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+            <div id="accordion${student.user_id}">
+            <div class="card">
+                <div class="card-header text-start" data-bs-toggle="collapse" href="#collapse${student.user_id}">
+                    ${student.username}
+                </div>
+                <div id="collapse${student.user_id}" class="collapse" data-bs-parent="#accordion${student.user_id}">
+                    <div class="card-body">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Kursname</th>
+                                    <th>Zugehörigkeit</th>
+                                    <th>Aktion</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-${student.user_id}">
+                                <!-- Kurszeilen werden hier eingefügt -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
+            </div>
+        </div>
             `;
+            populateAssignedCourses(student.user_id);
         });
 
         document.getElementById("students").innerHTML = studentHTML;
@@ -78,15 +81,17 @@ async function populateCourses(studentId) {
             courseHTML += `
                 <tr>
                     <td class="w-80">${course.course_name}</td>
+                    <td id="assignedCourse-${studentId}-${course.course_id}">...</td>
                     <td>
-                        <button type="button" onclick="addCourse('${studentId}', '${course.id}');" class="btn btn-primary btn-sm btn-block">Add</button>
-                        <button type="button" onclick="removeCourse('${studentId}', '${course.id}');" class="btn btn-danger btn-sm btn-block">Remove</button>
+                        <button type="button" onclick="addCourse('${studentId}', '${course.course_id}');" class="btn btn-primary btn-sm">Add</button>
+                        <button type="button" onclick="removeCourse('${studentId}', '${course.course_id}');" class="btn btn-danger btn-sm">Remove</button>
                     </td>
                 </tr>
             `;
         });
 
-        document.getElementById(`table-${studentId}`).innerHTML += courseHTML;
+        document.getElementById(`table-${studentId}`).innerHTML = courseHTML;
+        populateAssignedCourses(studentId);
     } catch (error) {
         console.error('Fehler beim Abrufen der Kurse:', error);
     }
@@ -107,6 +112,7 @@ async function displayCourses() {
                             <h5 class="card-title">${course.course_name}</h5>
                             <span>(${course.course_type})</span>
                             <p class="card-text">${course.course_description}</p>
+                            <button onclick="deleteCourse('${course.course_id}')" class="btn btn-danger">Löschen</button>
                         </div>
                     </div>
                 </div>
@@ -119,12 +125,12 @@ async function displayCourses() {
     }
 }
 
-async function addCourse(studentId, courseId) {
+async function addCourse(user_id, course_id) {
     try {
         const response = await fetch('http://localhost:3000/assignCourse', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ studentId, courseId })
+            body: JSON.stringify({ user_id, course_id })
         });
 
         if (response.ok) {
@@ -137,8 +143,60 @@ async function addCourse(studentId, courseId) {
     }
 }
 
+async function deleteCourse(course_id) {
+    try {
+        const response = await fetch(apiUrl + 'deleteCourse/' + course_id, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            console.log('Kurs gelöscht');
+            await displayCourses(); // Aktualisieren der Kursliste
+        } else {
+            console.error('Fehler beim Löschen des Kurses');
+        }
+    } catch (error) {
+        console.error('Fehler:', error);
+    }
+}
+
+
+// Funktion zum Abrufen und Anzeigen zugeordneter Kurse
+async function populateAssignedCourses(studentId) {
+    try {
+        const response = await fetch(`http://localhost:3000/getAssignedCourses/${studentId}`);
+        const assignedCourses = await response.json();
+
+        assignedCourses.forEach(assignedCourse => {
+            const assignedCourseCell = document.getElementById(`assignedCourse-${studentId}-${assignedCourse.course_id}`);
+            if (assignedCourseCell) {
+                assignedCourseCell.innerHTML = "Ist zugewiesen";
+            }
+        });
+    } catch (error) {
+        console.error('Fehler beim Abrufen der zugewiesenen Kurse:', error);
+    }
+}
+
+
+// Funktion zum Entfernen eines zugewiesenen Kurses
 async function removeCourse(studentId, courseId) {
-    // Implementiere hier die Logik zum Entfernen eines Kurses, falls erforderlich
+    try {
+        const response = await fetch(apiUrl + 'unassignCourse', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ studentId, courseId })
+        });
+
+        if (response.ok) {
+            console.log('Kurs entfernt');
+            await getStudents(); // Die Liste der Studenten aktualisieren, um die Änderungen zu reflektieren
+        } else {
+            console.error('Fehler beim Entfernen des Kurses');
+        }
+    } catch (error) {
+        console.error('Fehler:', error);
+    }
 }
 
 document.getElementById("btnCourse").addEventListener("click", async (event) => {
@@ -163,6 +221,9 @@ document.getElementById("btnCourse").addEventListener("click", async (event) => 
                 document.getElementById("courseAlert").classList.remove("d-none");
                 await displayCourses();
             } else {
+                console.error('Fehler beim Hinzufügen des Kurses. Status:', response.status);
+                const resText = await response.text();
+                console.error('Serverantwort:', resText);
                 document.getElementById("courseExitAlert").classList.remove("d-none");
             }
         } catch (error) {
@@ -176,4 +237,4 @@ document.getElementById("btnCourse").addEventListener("click", async (event) => 
             document.getElementById("courseExitAlert").classList.add("d-none");
         }, 2000);
     }
-});
+}); 
