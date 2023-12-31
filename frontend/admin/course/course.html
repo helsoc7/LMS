@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Kursdetails</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5" id="courseDetailsContainer">
+        <h1 id="courseName">Kursname</h1>
+
+        <div class="row">
+            <!-- Linke Spalte: Video-Akkordeon -->
+            <div class="col-md-6">
+                <div id="videoAccordion" class="accordion">
+                    <!-- Video-Liste wird hier dynamisch eingefügt -->
+                </div>
+            </div>
+
+            <!-- Rechte Spalte: Kursinhalte -->
+            <div class="col-md-6">
+                <div id="courseContent">
+                    <button class="btn btn-secondary my-2" id="showAssignmentsButton">Aufgaben anzeigen</button>
+                    <!-- Button zum Öffnen des Modals -->
+                    <button class="btn btn-primary my-2" data-toggle="modal" data-target="#addVideoModal" id="addVideosButton">Video hinzufügen</button>
+                
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video hinzufügen Modal -->
+<div class="modal fade" id="addVideoModal" tabindex="-1" role="dialog" aria-labelledby="addVideoModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addVideoModalLabel">Video hinzufügen</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="addVideoForm">
+                    <!-- Video-Informationen hier einfügen -->
+                    <input type="text" class="form-control my-2" id="videoTitle" placeholder="Videotitel" required>
+                    <input type="text" class="form-control my-2" id="videoUrl" placeholder="Video-URL" required>
+                    <textarea class="form-control my-2" id="videoDescription" placeholder="Beschreibung"></textarea>
+                    <button type="submit" class="btn btn-primary">Video hinzufügen</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+    
+
+    
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="course.js"></script>
+</body>
+</html>

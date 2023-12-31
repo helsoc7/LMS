@@ -47,6 +47,8 @@ async function getConnection() {
 
 app.use(express.json(), cors(corsOptions)); 
 
+app.use(express.static('frontend'));
+
 app.get('/', (req, res) => {
     console.log("Das ist die Startseite!");
     res.status(200).send("Willkommen auf der Startseite!");
@@ -238,6 +240,80 @@ app.delete('/unassignCourse', async (req, res) => {
         await cnx.end();
     } catch (error) {
         console.error("Error unassigning course", error);
+        res.status(500).send({ message: "Internal Server Error" });
+    }
+});
+
+// Route für die Kursdetails
+app.get('/course/:courseId', async (req, res) => {
+    try {
+        const courseId = req.params.courseId;
+        const cnx = await getConnection();
+        const [course] = await cnx.query('SELECT * FROM course WHERE course_id = ?', [courseId]);
+
+        if (course.length > 0) {
+            res.status(200).send(course[0]);
+        } else {
+            res.status(404).send({ message: 'Kurs nicht gefunden' });
+        }
+        await cnx.end();
+    } catch (error) {
+        console.error("Error retrieving course details", error);
+        res.status(500).send({ message: "Internal Server Error" });
+    }
+});
+
+// Videos für einen spezifischen Kurs abrufen
+app.get('/videos/:course_id', async (req, res) => {
+    try {
+        const course_id = req.params.course_id;
+        const cnx = await getConnection();
+        const [videos] = await cnx.query('SELECT * FROM videos WHERE course_id = ?', [course_id]);
+
+        if (videos.length > 0) {
+            res.status(200).send(videos);
+        } else {
+            res.status(404).send({ message: 'Keine Videos für diesen Kurs gefunden' });
+        }
+        await cnx.end();
+    } catch (error) {
+        console.error("Error retrieving videos", error);
+        res.status(500).send({ message: "Internal Server Error" });
+    }
+});
+
+
+// Videos hinzufügen
+app.post('/addVideo', async (req, res) => {
+    const { courseId, title, url, description } = req.body;
+
+    try {
+        const cnx = await getConnection();
+
+        // Fügen Sie das neue Video in die Datenbank ein
+        await cnx.execute('INSERT INTO videos (course_id, title, url, description) VALUES (?, ?, ?, ?)', [courseId, title, url, description]);
+
+        console.log('Video hinzugefügt:', { title });
+        res.status(200).send({ message: 'Video erfolgreich hinzugefügt' });
+
+        await cnx.end();
+    } catch (error) {
+        console.error("Error adding video", error);
+        res.status(500).send({ message: "Internal Server Error" });
+    }
+});
+
+
+// Video wieder löschen
+app.delete('/deleteVideo/:videoId', async (req, res) => {
+    try {
+        const videoId = req.params.videoId;
+        const cnx = await getConnection();
+        await cnx.execute('DELETE FROM videos WHERE video_id = ?', [videoId]);
+        res.status(200).send({ message: 'Video erfolgreich gelöscht' });
+        await cnx.end();
+    } catch (error) {
+        console.error("Error deleting video", error);
         res.status(500).send({ message: "Internal Server Error" });
     }
 });

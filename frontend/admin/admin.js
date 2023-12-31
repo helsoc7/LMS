@@ -87,6 +87,16 @@ async function populateCourses(studentId) {
                         <button type="button" onclick="removeCourse('${studentId}', '${course.course_id}');" class="btn btn-danger btn-sm">Remove</button>
                     </td>
                 </tr>
+                <div class="col-4">
+            <div class="card">
+                <!-- Kursbild und andere Details -->
+                <div class="card-body">
+                    <h5 class="card-title">${course.course_name}</h5>
+                    <!-- Weitere Informationen -->
+                    <a href="course/course.html?courseId=${course.course_id}" class="btn btn-primary">Mehr erfahren</a>
+                </div>
+            </div>
+        </div>
             `;
         });
 

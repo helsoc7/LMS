@@ -23,3 +23,21 @@ CREATE TABLE IF NOT EXISTS assigned_courses (
     FOREIGN KEY (student_id) REFERENCES users(user_id),
     FOREIGN KEY (course_id) REFERENCES course(course_id)
 );
+
+
+CREATE TABLE IF NOT EXISTS videos (
+    video_id INT AUTO_INCREMENT PRIMARY KEY,
+    course_id INT,
+    title VARCHAR(255) NOT NULL,
+    url VARCHAR(255) NOT NULL,
+    description TEXT,
+    FOREIGN KEY (course_id) REFERENCES course(course_id)
+);
+
+CREATE TABLE IF NOT EXISTS assignments (
+    assignment_id INT AUTO_INCREMENT PRIMARY KEY,
+    course_id INT,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    FOREIGN KEY (course_id) REFERENCES course(course_id)
+);
