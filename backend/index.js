@@ -319,6 +319,31 @@ app.delete('/deleteVideo/:videoId', async (req, res) => {
 });
 
 
+// Anfragen für die Kurssuche
+app.get('/searchCourses', async (req, res) => {
+    const searchQuery = req.query.query;
+
+    if (!searchQuery) {
+        return res.status(400).send({ message: "Kein Suchbegriff angegeben" });
+    }
+
+    try {
+        const cnx = await getConnection();
+        const [results] = await cnx.query('SELECT * FROM course WHERE course_name LIKE ?', [`%${searchQuery}%`]);
+        await cnx.end();
+
+        if (results.length > 0) {
+            res.status(200).send(results);
+        } else {
+            res.status(404).send({ message: 'Keine Kurse gefunden' });
+        }
+    } catch (error) {
+        console.error('Fehler bei der Kurs-Suche:', error);
+        res.status(500).send({ message: "Internal Server Error" });
+    }
+});
+
+
 app.listen(port, () => {
     console.log('Server läuft auf http://localhost:${port}');
 });

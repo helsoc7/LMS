@@ -100,3 +100,53 @@ function redirectUserBasedOnType(type) {
         window.location.href = 'student/student.html';
     }
 }
+
+// Such-Funktion
+document.getElementById('searchForm').addEventListener('submit', async function(event) {
+    event.preventDefault(); // Verhindert, dass das Formular auf traditionelle Weise abgesendet wird
+
+    const searchQuery = document.getElementById('searchInput').value;
+    if (!searchQuery) {
+        alert('Bitte geben Sie einen Suchbegriff ein.');
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:3000/searchCourses?query=${encodeURIComponent(searchQuery)}`);
+        if (!response.ok) {
+            throw new Error('Fehler bei der Suche');
+        }
+        const results = await response.json();
+
+        // Ergebnisse verarbeiten und anzeigen
+        displaySearchResults(results);
+    } catch (error) {
+        console.error('Fehler:', error);
+    }
+});
+
+function displaySearchResults(results) {
+    const resultsContainer = document.getElementById('searchResults');
+    resultsContainer.innerHTML = ''; // Alte Suchergebnisse löschen
+
+    results.forEach(course => {
+        const courseElement = document.createElement('div');
+        courseElement.textContent = course.course_name;
+        // Weitere Informationen und Styling hinzufügen
+        resultsContainer.appendChild(courseElement);
+    });
+}
+
+// Event Listener für die Suchanfrage
+document.getElementById('searchForm').addEventListener('submit', async function(event) {
+    event.preventDefault(); // Verhindert das Standardverhalten des Formulars
+
+    const searchQuery = document.getElementById('searchInput').value;
+    if (!searchQuery) {
+        alert('Bitte geben Sie einen Suchbegriff ein.');
+        return;
+    }
+
+    // Weiterleitung zur searchResults.html-Seite mit der Suchanfrage als URL-Parameter
+    window.location.href = `searchResults.html?query=${encodeURIComponent(searchQuery)}`;
+});
